@@ -1,9 +1,9 @@
 "user client";
 
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { addClothingItem } from "@/app/backend/closet";
-import { ClothingInsert } from "@/app/types";
+import { ClothingInsert } from "@/app/backend/closet";
 import { userAgent } from "next/server";
 
 export default function AddClothing() {
@@ -33,10 +33,8 @@ export default function AddClothing() {
             
             // 3. Create a new clothing item in the database
             const newClothingItem: ClothingInsert = {
-                name: 'New Item',
                 category: 'Uncategorized',
-                image_path: imagePath,
-                user_id: userId || '',
+                image_path: imagePath
             };
 
             await addClothingItem(newClothingItem);

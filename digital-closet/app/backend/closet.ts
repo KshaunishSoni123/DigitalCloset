@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from '@/utils/supabase/server'; // Provided by the Supabase starter
+import { createClient } from '@/lib/supabase/server'; // Provided by the Supabase starter
 import { revalidatePath } from 'next/cache';
 
 export type ClothingInsert = {
@@ -14,7 +14,7 @@ export type ClothingUpdate = Partial<ClothingInsert>;
 
 //Read Operation
 export async function getClothes() {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: clothes, error } = await supabase
         .from('clothes')
         .select('*')
@@ -29,19 +29,19 @@ export async function getClothes() {
 
 //Create Operation
 export async function addClothingItem(data: ClothingInsert) {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     //Supabase SSR client automatically grabs user from session cookie
     const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData.data.user) {
-        throw new Error(userError.message)
-    };
+    if (userError || !userData?.user) {
+        throw new Error(userError?.message || "User not found");
+    }
 
     const { data: newCloth, error } = await supabase
         .from('clothes')
         .insert([{
             ...data, 
-            user_id: userData.data.user.id 
+            user_id: userData.user.id 
         }])
         .select()
         .single();
@@ -55,7 +55,7 @@ export async function addClothingItem(data: ClothingInsert) {
 
 //Update Operation
 export async function UpdateClothingItem(id: string, updates: ClothingUpdate) {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: updatedCloth, error } = await supabase
         .from('clothes')
@@ -74,7 +74,7 @@ export async function UpdateClothingItem(id: string, updates: ClothingUpdate) {
 //Delete Operation
 
 export async function deleteClothingItem(id: string, imagePath: string) {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     //1. Delete image from bucket
     const {error: storageError} = await supabase
@@ -85,14 +85,14 @@ export async function deleteClothingItem(id: string, imagePath: string) {
     if (storageError) throw new Error(storageError.message);
 
     //2. Delete record from database
-    const { data: deletedCloth, dbError } = await supabase
+    const { data: deletedCloth, error } = await supabase
         .from('clothes')
         .delete()
         .eq('id', id)
         .select()
         .single();
 
-    if (dbError) throw new Error(dbError.message);
+    if (error) throw new Error(error.message);
 
     revalidatePath('/closet');
     return {success: true}

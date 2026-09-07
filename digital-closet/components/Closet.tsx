@@ -1,9 +1,9 @@
-import { getclothes } from "@/app/backend/closet";
-import AddClothing from "./components/AddClothing";
-import ClosetGrid from "./components/ClosetGrid";
+import { getClothes } from "@/app/backend/closet";
+import AddClothing from "./AddClothing";
+import ClosetGrid from "./ClosetGrid";
 
 export default async function ClosetPage() {
-    const clothes = await getclothes();
+    const clothes = await getClothes();
 
     return (
         <main className="max-w-4xl mx-auto py-8">
