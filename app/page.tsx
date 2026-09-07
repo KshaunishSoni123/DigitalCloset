@@ -13,7 +13,7 @@ export default async function ClosetPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/login");
+    return redirect("/auth/login");
   }
 
   const clothes = await getClothes();
