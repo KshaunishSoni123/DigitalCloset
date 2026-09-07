@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'; // Provided by the Supabase starter
 import { revalidatePath } from 'next/cache';
+import { logger } from '@/utils/logger';
 
 export type ClothingInsert = {
     category: string;
@@ -30,13 +31,19 @@ export async function getClothes() {
 //Create Operation
 export async function addClothingItem(data: ClothingInsert) {
     const supabase = await createClient();
+    const startTime = Date.now();
 
     //Supabase SSR client automatically grabs user from session cookie
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) {
-        throw new Error(userError?.message || "User not found");
-    }
+        logger.warn("Unauthorized upload attempt", { action: "addClothingItem", error: userError?.message });
+        throw new Error("Unauthorized");
+      }
 
+
+    const userId = userData.user.id;
+    logger.info("Attempting to insert clothing item", { action: "addClothingItem", userId, metadata: { category: data.category } });
+    
     const { data: newCloth, error } = await supabase
         .from('clothes')
         .insert([{
@@ -50,13 +57,23 @@ export async function addClothingItem(data: ClothingInsert) {
 
     revalidatePath('/closet');
 
+    logger.info("Clothing item inserted successfully", { 
+        action: "addClothingItem", 
+        userId, 
+        metadata: { id: newCloth.id, latencyMs: Date.now() - startTime } 
+      });
+
     return newCloth;
 }
 
 //Update Operation
 export async function UpdateClothingItem(id: string, updates: ClothingUpdate) {
     const supabase = await createClient();
+    const startTime = Date.now();
 
+
+    logger.info("Attempting to Update clothing item", { action: "updateClothingItem",  metadata: { category: updates.category } });
+    
     const { data: updatedCloth, error } = await supabase
         .from('clothes')
         .update(updates)
@@ -68,6 +85,11 @@ export async function UpdateClothingItem(id: string, updates: ClothingUpdate) {
 
     revalidatePath('/closet');
 
+    logger.info("Clothing item Updated successfully", { 
+        action: "updateClothingItem", 
+        metadata: { id: updatedCloth.id, latencyMs: Date.now() - startTime } 
+      });
+
     return updatedCloth;
 }
 
@@ -75,7 +97,8 @@ export async function UpdateClothingItem(id: string, updates: ClothingUpdate) {
 
 export async function deleteClothingItem(id: string, imagePath: string) {
     const supabase = await createClient();
-
+    const startTime = Date.now();
+    
     //1. Delete image from bucket
     const {error: storageError} = await supabase
         .storage
@@ -83,6 +106,9 @@ export async function deleteClothingItem(id: string, imagePath: string) {
         .remove([imagePath]);
         
     if (storageError) throw new Error(storageError.message);
+
+    logger.info("Attempting to delete clothing item", { action: "deleteClothingItem", metadata: { id, imagePath } });
+    
 
     //2. Delete record from database
     const { data: deletedCloth, error } = await supabase
@@ -93,6 +119,11 @@ export async function deleteClothingItem(id: string, imagePath: string) {
         .single();
 
     if (error) throw new Error(error.message);
+
+    logger.info("Clothing item deleted successfully", { 
+        action: "deleteClothingItem", 
+        metadata: { id: id, latencyMs: Date.now() - startTime } 
+      });
 
     revalidatePath('/closet');
     return {success: true}
