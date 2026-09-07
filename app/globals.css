@@ -71,8 +71,10 @@ body {
 
 /* Buttons & Interactions */
 .cta {
-  background: linear-gradient(90deg, var(--pink), var(--yellow));
-  box-shadow: 0 0 20px rgba(255,46,196,.5);
+  background: var(--pink);
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 20px rgba(255,46,196,.5); /* Keeps the neon pink glow */
+  color: var(--text); /* Changes text to white so it contrasts with solid pink */
 }
 
 .item-card {
