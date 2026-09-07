@@ -66,20 +66,28 @@ export async function addClothingItem(data: ClothingInsert) {
     return newCloth;
 }
 
+export async function updateClothingItem(id: number, category: string, description: string) {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('clothes')
+      .update({ category, description })
+      .eq('id', id);
+  
+    if (error) throw new Error(error.message);
+    revalidatePath('/');
+  }
+
 //Update Operation
-export async function UpdateClothingItem(id: string, updates: ClothingUpdate) {
+export async function UpdateClothingItem(id: number, category: string, description: string) {
     const supabase = await createClient();
     const startTime = Date.now();
 
-
-    logger.info("Attempting to Update clothing item", { action: "updateClothingItem",  metadata: { category: updates.category } });
+    logger.info("Attempting to Update clothing item", { action: "updateClothingItem",  metadata: { category: category } });
     
-    const { data: updatedCloth, error } = await supabase
-        .from('clothes')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+    const { error } = await supabase
+    .from('clothes')
+    .update({ category, description })
+    .eq('id', id);
 
     if (error) throw new Error(error.message);
 
@@ -87,10 +95,10 @@ export async function UpdateClothingItem(id: string, updates: ClothingUpdate) {
 
     logger.info("Clothing item Updated successfully", { 
         action: "updateClothingItem", 
-        metadata: { id: updatedCloth.id, latencyMs: Date.now() - startTime } 
+        metadata: { id: id, latencyMs: Date.now() - startTime } 
       });
 
-    return updatedCloth;
+    return id;
 }
 
 //Delete Operation
