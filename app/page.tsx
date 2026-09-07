@@ -1,3 +1,5 @@
+export const instant = false; // Opt out of prerendering: this page reads cookies via Supabase auth
+
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getClothes } from "@/app/backend/closet";
