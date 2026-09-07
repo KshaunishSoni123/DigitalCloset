@@ -4,7 +4,6 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { addClothingItem } from "@/app/backend/closet";
 import { ClothingInsert } from "@/app/backend/closet";
-import { userAgent } from "next/server";
 
 export default function AddClothing() {
     const [isUploading, setIsUploading] = useState(false);
@@ -21,10 +20,10 @@ export default function AddClothing() {
             const { data: userData } = await supabase.auth.getUser();
             const userId = userData.user?.id;
             const fileExt = file.name.split('.').pop();
-            const fileName  = '${crypto.randomUUID()}.${fileExt}';
-            const imagePath = '${userId}/${fileName}';
+            const fileName = `${crypto.randomUUID()}.${fileExt}`;
+            const imagePath = `${userId}/${fileName}`;
 
-            // 2. Uplload to Supabase Storage
+            // 2. Upload to Supabase Storage
             const { error: uploadError } = await supabase.storage
                 .from('closet_images')
                 .upload(imagePath, file);
