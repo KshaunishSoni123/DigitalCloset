@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'; // Tells Next.js to skip pre-rendering
+
 import { getClothes } from "@/app/backend/closet";
 import AddClothing from "@/components/AddClothing";
 import ClosetGrid from "@/components/ClosetGrid";
