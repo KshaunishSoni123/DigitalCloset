@@ -1,10 +1,19 @@
-export const dynamic = 'force-dynamic'; // Tells Next.js to skip pre-rendering
-
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { getClothes } from "@/app/backend/closet";
 import AddClothing from "@/components/AddClothing";
-import ClosetGrid from "@/components/ClosetGrid";
+import ClosetGrid from "@/components/ClosetGrid"; // Adjust path if needed
 
 export default async function ClosetPage() {
+  const supabase = await createClient();
+  
+  // Checking the user securely reads cookies, automatically making this route dynamic
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return redirect("/login");
+  }
+
   const clothes = await getClothes();
 
   return (
