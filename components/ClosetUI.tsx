@@ -46,7 +46,7 @@ export default function ClosetUI({ clothes }: { clothes: any[] }) {
               </div>
             );
           })}
-          <div id="slot-head" className="slot">🙂</div>
+          <div id="slot-head" className="slot"></div>
         </div>
       </div>
       
